@@ -133,7 +133,7 @@
                                                     <th>Player</th>
                                                     <th>fall</th>
                                                     <th>runs</th>
-                                                    <th>ballsfaced</th>
+                                                    <th>bf</th>
                                                     <th>4s</th>
                                                     <th>6s</th>
                                                     <th>st rate</th>
@@ -144,42 +144,49 @@
                                         $sel = mysqli_query($link, $select);
                                         while ($select = mysqli_fetch_array($sel)) {
                                             echo "<tr>";
-                                            echo "<td>".$select['sname']."</td>";
+                                            echo "<td><a href=\"players.php?id=".$select['batsman']."\">".$select['sname']."</a></td>";
                                             $wicketcheck = "SELECT * FROM Wicket WHERE batsman = ".$select['batsman']." AND innings = ".$innings['ID']."";
                                             $wicketcheck = mysqli_query($link, $wicketcheck);
                                             $wicket = mysqli_fetch_array($wicketcheck);
                                             $isOut = mysqli_num_rows($wicketcheck);
+                                            $bowler = "SELECT sname FROM Player WHERE ID = ".$wicket['bowler']."";
+                                            $bowler = mysqli_query($link, $bowler);
+                                            $bowler = mysqli_fetch_array($bowler);
+                                            $fielder = "SELECT sname FROM Player WHERE ID = ".$wicket['fielder']."";
+                                            $fielder = mysqli_query($link, $fielder);
+                                            $fielder = mysqli_fetch_array($fielder);
+
                                             if ($isOut < 1) echo "<td>not out</td>";
                                             else if ($wicket['falltype'] == "ct"){
                                                 if ($wicket['fielder'] == $wicket['bowler']){
                                                     $faller = "SELECT * FROM Wicket WHERE batsman = ".$select['batsman']." AND innings = ".$innings['ID']."";
                                                     $faller = mysqli_query($link, $faller);
                                                     $wicket = mysqli_fetch_array($faller);
-                                                    echo "<td> c&b ".$wicket['bowler']."</td>";
+                                                    echo "<td> c&b <a href=\"players.php?id=".$wicket['bowler']."\">".$bowler['sname']."</a></td>";
                                                 } else {
-                                                    echo "<td> c ".$wicket['fielder']."  b ".$wicket['bowler']."</td>";
+                                                    echo "<td> c <a href=\"players.php?id=".$wicket['fielder']."\">".$fielder['sname']."</a>  b <a href=\"players.php?id=".$wicket['bowler']."\">".$bowler['sname']."</a></td>";
                                                 }
                                             }
                                             else if ($wicket['falltype'] == "b"){
-                                                echo "<td> b  ".$wicket['bowler']."</td>";
+                                                echo "<td> b  <a href=\"players.php?id=".$wicket['bowler']."\">".$bowler['sname']."</a></td>";
                                             }
                                             else if ($wicket['falltype'] == "st"){
-                                                echo "<td> st ".$wicket['fielder']."  b ".$wicket['bowler']."</td>";
+                                                echo "<td> st <a href=\"players.php?id=".$wicket['fielder']."\">".$fielder['sname']."</a>  b <a href=\"players.php?id=".$wicket['bowler']."\">".$bowler['sname']."</a></td>";
                                             }
                                             else if ($wicket['falltype'] == "lbw"){
-                                                echo "<td> lbw  ".$wicket['bowler']."</td>";
+                                                echo "<td> lbw  <a href=\"players.php?id=".$wicket['bowler']."\">".$bowler['sname']."</a></td>";
                                             }
                                             else if ($wicket['falltype'] == "runout"){
-                                                echo "<td> run out ".$wicket['fielder']."</td>";
+                                                echo "<td> run out <a href=\"players.php?id=".$wicket['fielder']."\">".$fielder['sname']."</a></td>";
                                             }
                                             else if ($wicket['falltype'] == "hitWicket"){
-                                                echo "<td>hit wicket".$wicket['bowler']."</td>";
+                                                echo "<td>hit wicket <a href=\"players.php?id=".$wicket['bowler']."\">".$bowler['sname']."</a></td>";
                                             }
                                             else if ($wicket['falltype'] == "timedOut"){
                                                 echo "<td>timed out</td>";
                                             }
                                             else if ($wicket['falltype'] == "obstruction"){
-                                                echo "<td>obstruction the field</td>";
+                                                echo "<td>obstructing the field</td>";
                                             }
                                             else if ($wicket['falltype'] == "handledTheBall"){
                                                 echo "<td>handled the ball</td>";
@@ -204,8 +211,9 @@
                                             <table class="table table-striped table-bordered table-hover">
                                                 <thead>
                                                     <th>Player</th>
-                                                    <th>balls</th>
-                                                    <th>maidens</th>
+                                                    <!-- <th>balls</th> -->
+                                                    <th>overs</th>
+                                                    <th>maiden</th>
                                                     <th>runs</th>
                                                     <th>wkts</th>
                                                     <th>4s</th>
@@ -221,8 +229,11 @@
                                         $sel = mysqli_query($link, $select);
                                         while ($select = mysqli_fetch_array($sel)) {
                                             echo "<tr>";
-                                            echo "<td>".$select['sname']."</td>";
-                                            echo "<td>".$select['ballsbowled']."</td>";
+                                            echo "<td><a href=\"players.php?id=".$select['bowler']."\">".$select['sname']."</a></td>";
+                                            // echo "<td>".$select['ballsbowled']."</td>";
+                                            $overs = floor($select['ballsbowled'] / 6);
+                                            $overs = $overs + ($select['ballsbowled'] - $overs*6)/10;
+                                            echo "<td>".$overs."</td>";
                                             echo "<td>".$select['maidens']."</td>";
                                             echo "<td>".$select['runs']."</td>";
                                             echo "<td>".$select['wickets']."</td>";
@@ -231,7 +242,10 @@
                                             echo "<td>".$select['wides']."</td>";
                                             echo "<td>".$select['noballs']."</td>";
                                             echo "<td>".$select['economy']."</td>";
-                                            echo "<td>".$select['average']."</td>";
+                                            if ($select['average'])
+                                            	echo "<td>".$select['average']."</td>";
+                                            else
+                                            	echo "<td> - </td>";
                                             echo "</tr>";
                                         } ?>
                                                 </tboody>
@@ -367,3 +381,4 @@
     <script src="assets/js/bootstrap.js"></script>
 </body>
 </html>
+
